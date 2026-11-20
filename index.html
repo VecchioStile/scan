@@ -13,63 +13,80 @@
 <title>PokéScan</title>
 <style>
 :root{--bg:#10141f;--sf:#1a2032;--ink:#eef1fa;--mu:#98a2c0;--ln:#2c3550;--ac:#ff5a4d;--bl:#6f97ff;--ok:#44c585;--wa:#f0a928}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,system-ui,"Helvetica Neue",sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,system-ui,sans-serif;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
 main{flex:1;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
 nav{display:flex;background:var(--sf);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;background:none;border:0;color:var(--mu);padding:12px 4px;font:inherit;font-size:.85rem;font-weight:600}
 nav button[aria-selected=true]{color:var(--ac)}
-section[hidden]{display:none}
+[hidden]{display:none!important}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:10px;width:100%}
 .btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 14px;background:var(--bl);color:#0b1020}
 .btn.r{background:var(--ac);color:#fff}.btn.g{background:var(--sf);color:var(--ink);border:1px solid var(--ln)}
-.row{display:flex;gap:8px;margin:8px 0;flex-wrap:wrap}.row>*{flex:1}
+.row{display:flex;gap:8px;margin:8px 0}.row>*{flex:1;min-width:0}
 .stage{position:relative;width:100%;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:3/4}
-.stage video{position:absolute;inset:0;width:100%;height:100%}
+.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 #guide{position:absolute;border:3px solid var(--ac);border-radius:10px;box-shadow:0 0 0 999px rgba(0,0,0,.45)}
 .hint{color:var(--mu);font-size:.85rem;margin:6px 0}
 .res{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px}
 .ct{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:6px;font-size:.78rem;display:flex;flex-direction:column;gap:4px}
 .ct img{width:100%;aspect-ratio:63/88;object-fit:cover;border-radius:6px;background:var(--ln)}
-.ct b{font-size:.82rem;line-height:1.15}.ct button{padding:6px;font-size:.8rem}
-.q{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.ct b{font-size:.82rem;line-height:1.15}.tag{font-size:.72rem;color:var(--mu)}.pr{color:var(--ok);font-weight:700}
+.q{display:flex;align-items:center;justify-content:space-between}
 .q button{width:32px;height:32px;border-radius:8px;border:1px solid var(--ln);background:var(--bg);color:var(--ink);font-size:1.1rem}
 .msg{padding:8px 10px;border-radius:8px;margin:4px 0;font-size:.88rem;background:#ff5a4d33}.msg.o{background:#44c58533}.msg.w{background:#f0a92833}
-.stat{display:flex;gap:8px;margin:8px 0}.stat div{flex:1;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px}.stat b{display:block;font-size:1.3rem}
-h2{margin:6px 0;font-size:1.15rem}
-.tag{font-size:.7rem;color:var(--mu)}
+.stat{display:flex;gap:8px;margin:8px 0}.stat div{flex:1;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:8px;font-size:.78rem;color:var(--mu)}.stat b{display:block;font-size:1.25rem;color:var(--ink)}
+.seg{display:flex;background:var(--sf);border-radius:10px;padding:3px;border:1px solid var(--ln)}.seg button{flex:1;border:0;background:none;color:var(--mu);padding:8px;border-radius:8px;font:inherit;font-weight:600}.seg button.on{background:var(--bl);color:#0b1020}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9;overflow:auto;padding:calc(env(safe-area-inset-top) + 14px) 14px 20px}
+#ov .box{background:var(--sf);border-radius:16px;padding:14px;max-width:420px;margin:0 auto}
+#ov img{width:62%;display:block;margin:0 auto 10px;border-radius:10px}
+h2{margin:8px 0;font-size:1.1rem}
 </style>
 </head>
 <body>
 <main>
 <section id="scan">
  <div class="stage" id="stage"><video id="vid" playsinline muted autoplay></video><div id="guide" hidden></div></div>
- <p class="hint" id="shint">Inquadra la carta dentro al riquadro, con buona luce, poi premi “Leggi carta”.</p>
+ <p class="hint" id="shint">Inquadra la carta nel riquadro, con buona luce, poi premi “Leggi carta”.</p>
  <div class="row"><button class="btn r" id="go">Attiva fotocamera</button><button class="btn" id="snap" hidden>Leggi carta</button></div>
- <div class="row"><input id="q" placeholder="Oppure cerca per nome (es. Pikachu)" enterkeyhint="search"><select id="lang" style="flex:0 0 90px"><option value="it">IT</option><option value="en">EN</option></select></div>
+ <div class="row"><input id="q" placeholder="Cerca per nome (es. Pikachu)" enterkeyhint="search" autocomplete="off"><button class="btn" id="sb" style="flex:0 0 auto">Cerca</button></div>
+ <div class="row"><select id="lang"><option value="it">Nomi italiani</option><option value="en">Nomi inglesi</option></select></div>
+ <div id="status" class="hint">Controllo database…</div>
  <div id="ocr" class="hint"></div>
  <div class="res" id="res"></div>
 </section>
-<section id="col" hidden><div class="stat" id="cs"></div><input id="cf" placeholder="Filtra la collezione"><div class="res" id="cl" style="margin-top:8px"></div></section>
+<section id="col" hidden>
+ <div class="seg" id="lseg"><button data-l="col" class="on">Collezione</button><button data-l="wish">Lista desideri</button></div>
+ <div class="stat" id="cs"></div>
+ <div class="row"><input id="cf" placeholder="Filtra per nome o set"><select id="so"><option value="name">Nome</option><option value="price">Prezzo</option><option value="set">Set</option></select></div>
+ <div class="row"><button class="btn g" id="rp">Aggiorna prezzi</button><button class="btn g" id="csv">Esporta CSV</button></div>
+ <div class="res" id="cl"></div>
+</section>
 <section id="deck" hidden>
- <div class="row"><select id="dsel"></select></div>
+ <select id="dsel"></select>
  <div class="row"><button class="btn" id="dn">Nuovo</button><button class="btn g" id="dr">Rinomina</button><button class="btn g" id="dd">Elimina</button></div>
  <div id="db"></div>
 </section>
 </main>
-<nav><button data-t="scan" aria-selected="true">Scansiona</button><button data-t="col" aria-selected="false">Collezione</button><button data-t="deck" aria-selected="false">Mazzi</button></nav>
+<nav><button data-t="scan" aria-selected="true">Scansiona</button><button data-t="col" aria-selected="false">Carte</button><button data-t="deck" aria-selected="false">Mazzi</button></nav>
+<div id="ov" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const API='https://api.tcgdex.net/v2/';
 const $=s=>document.querySelector(s);
-const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let S={cards:{},sets:{},col:{},decks:[],cur:null};
-try{const r=localStorage.getItem('pokescan');if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const esc=t=>String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let S={cards:{},sets:{},lists:{col:{},wish:{}},decks:[],cur:null};
+try{const r=JSON.parse(localStorage.getItem('pokescan')||'null');if(r){Object.assign(S,r);if(r.col){S.lists.col=r.col;delete S.col}}}catch(e){}
 const save=()=>{try{localStorage.setItem('pokescan',JSON.stringify(S))}catch(e){}};
 const uid=()=>Math.random().toString(36).slice(2,9);
 const num=n=>/^\d+$/.test(n)?String(parseInt(n,10)):n;
+const eur=n=>(n||0).toLocaleString('it-IT',{style:'currency',currency:'EUR'});
+const isBasicEn=c=>c.cat==='Energy'&&c.etype==='Basic';
+const grp=c=>c.cat==='Pokemon'?'Pokémon':c.cat==='Trainer'?'Allenatore':'Energia';
+const grpEn=c=>c.cat==='Pokemon'?'Pokémon':c.cat==='Trainer'?'Trainer':'Energy';
+let curList='col',lastBrief={};
 
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
@@ -79,89 +96,119 @@ document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
 });
 
 /* ---------- database ---------- */
-async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status);return r.json()}
+async function jget(u){const r=await fetch(u);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function ping(){try{const l=await jget(API+'en/sets');$('#status').textContent='Database collegato ('+l.length+' set).'}catch(e){$('#status').innerHTML='<span style="color:var(--ac)">Database non raggiungibile ('+esc(e.message)+'). Controlla la connessione.</span>'}}
 async function search(q,lang){
  const l=await jget(`${API}${lang}/cards?name=${encodeURIComponent(q)}`);
- return l.filter(c=>c.image).slice(0,40);
+ return l.slice(0,60);
 }
-async function info(id,brief){
- if(S.cards[id])return S.cards[id];
+function priceOf(d){const p=d.pricing||{},cm=p.cardmarket,tp=p.tcgplayer;
+ if(cm){const v=cm.trend||cm['trend-holo']||cm.avg||cm['avg-holo']||cm.low;if(v)return{v,cur:'EUR'}}
+ if(tp){for(const k of ['normal','holofoil','reverse-holofoil']){const x=tp[k];if(x&&(x.marketPrice||x.midPrice))return{v:(x.marketPrice||x.midPrice)*0.92,cur:'USD'}}}
+ return{v:0,cur:''}}
+async function info(id,force){
+ if(S.cards[id]&&!force)return S.cards[id];
  const d=await jget(`${API}en/cards/${id}`);
  let sc=S.sets[d.set.id];
  if(!sc){try{const s=await jget(`${API}en/sets/${d.set.id}`);sc=S.sets[d.set.id]={code:s.tcgOnline||d.set.id.toUpperCase(),name:s.name}}catch(e){sc={code:d.set.id.toUpperCase(),name:d.set.name}}}
- const c=S.cards[id]={id,name:brief?.name||d.name,nameEn:d.name,setId:d.set.id,setCode:sc.code,setName:sc.name,num:d.localId,
-  img:(d.image||brief?.image||'')+'/low.webp',cat:d.category,stage:d.stage||'',etype:d.energyType||'',std:!!(d.legal&&d.legal.standard),mark:d.regulationMark||''};
+ const pr=priceOf(d),old=S.cards[id]||{};
+ const c=S.cards[id]={id,name:old.name||lastBrief[id]?.name||d.name,nameEn:d.name,setId:d.set.id,setCode:sc.code,setName:sc.name,num:d.localId,
+  img:(d.image||'')+'/low.webp',cat:d.category,stage:d.stage||'',etype:d.energyType||'',rar:d.rarity||'',hp:d.hp||'',types:(d.types||[]).join('/'),
+  std:!!(d.legal&&d.legal.standard),mark:d.regulationMark||'',price:pr.v,cur:pr.cur};
  save();return c;
 }
-const isBasicEn=c=>c.cat==='Energy'&&c.etype==='Basic';
-const grp=c=>c.cat==='Pokemon'?'Pokémon':c.cat==='Trainer'?'Trainer':'Energy';
 
 /* ---------- camera + OCR ---------- */
 let stream=null,worker=null;
 async function startCam(){
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
-  const v=$('#vid');v.srcObject=stream;await v.play();
-  v.onloadedmetadata=layout;layout();$('#go').hidden=true;$('#snap').hidden=false;
- }catch(e){$('#shint').textContent='Fotocamera non disponibile: consenti l’accesso in Impostazioni > Safari, oppure cerca per nome.'}
+  const v=$('#vid');v.srcObject=stream;v.onloadedmetadata=layout;await v.play();layout();$('#go').hidden=true;$('#snap').hidden=false;
+ }catch(e){$('#shint').textContent='Fotocamera non disponibile ('+e.name+'). Consenti l’accesso in Impostazioni > Safari > Fotocamera, oppure cerca per nome.'}
 }
-function layout(){
- const v=$('#vid'),vw=v.videoWidth,vh=v.videoHeight;if(!vw)return;
- $('#stage').style.aspectRatio=vw+'/'+vh;v.style.objectFit='contain';
- const gw=Math.min(vw*.7,vh*.92*63/88),gh=gw*88/63,g=$('#guide');g.hidden=false;
- g.style.cssText+=`;left:${(vw-gw)/2/vw*100}%;top:${(vh-gh)/2/vh*100}%;width:${gw/vw*100}%;height:${gh/vh*100}%`;
-}
+function geom(v){const vw=v.videoWidth,vh=v.videoHeight,gw=Math.min(vw*.7,vh*.92*63/88),gh=gw*88/63;return{vw,vh,gw,gh,gx:(vw-gw)/2,gy:(vh-gh)/2}}
+function layout(){const v=$('#vid');if(!v.videoWidth)return;const g=geom(v);$('#stage').style.aspectRatio=g.vw+'/'+g.vh;
+ const e=$('#guide');e.hidden=false;e.style.left=g.gx/g.vw*100+'%';e.style.top=g.gy/g.vh*100+'%';e.style.width=g.gw/g.vw*100+'%';e.style.height=g.gh/g.vh*100+'%'}
 function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;$('#go').hidden=false;$('#snap').hidden=true;$('#guide').hidden=true}}
 $('#go').onclick=startCam;
-function crop(v,x,y,w,h,scale=2){const c=document.createElement('canvas');c.width=w*scale;c.height=h*scale;const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.6)';g.drawImage(v,x,y,w,h,0,0,c.width,c.height);return c}
-async function ocr(cv){
- if(!worker)worker=await Tesseract.createWorker('eng');
- return (await worker.recognize(cv)).data.text;
-}
+function crop(v,x,y,w,h){const c=document.createElement('canvas');c.width=w*2;c.height=h*2;const g=c.getContext('2d');g.filter='grayscale(1) contrast(1.6)';g.drawImage(v,x,y,w,h,0,0,c.width,c.height);return c}
+async function ocr(cv){if(!worker)worker=await Tesseract.createWorker('eng');return (await worker.recognize(cv)).data.text}
 $('#snap').onclick=async()=>{
- const v=$('#vid'),vw=v.videoWidth,vh=v.videoHeight,gw=Math.min(vw*.7,vh*.92*63/88),gh=gw*88/63,gx=(vw-gw)/2,gy=(vh-gh)/2;
- const o=$('#ocr');o.textContent='Lettura in corso…';$('#snap').disabled=true;
+ const v=$('#vid'),g=geom(v),o=$('#ocr');o.textContent='Lettura in corso…';$('#snap').disabled=true;
  try{
-  const nameTxt=await ocr(crop(v,gx+gw*.08,gy+gh*.025,gw*.62,gh*.1));
-  const numTxt=await ocr(crop(v,gx,gy+gh*.88,gw,gh*.11));
+  if(typeof Tesseract==='undefined')throw new Error('lettore testo non caricato');
+  const nameTxt=await ocr(crop(v,g.gx+g.gw*.08,g.gy+g.gh*.025,g.gw*.62,g.gh*.1));
+  const numTxt=await ocr(crop(v,g.gx,g.gy+g.gh*.88,g.gw,g.gh*.11));
   const m=numTxt.match(/(\d{1,3})\s*[\/7]\s*(\d{2,3})/)||numTxt.match(/\b(\d{1,3})\b/);
-  const bad=/^(basic|base|stage|fase|evolves|evolve|trainer|energy)$/i;
-  const words=(nameTxt.replace(/[^A-Za-zÀ-ÿ'\s-]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!bad.test(w))).sort((a,b)=>b.length-a.length);
-  const w=words[0];
-  o.textContent=`Letto: ${w||'nome non chiaro'} ${m?m[1]+(m[2]?'/'+m[2]:''):''}. Se non è giusto, correggi nel campo di ricerca.`;
-  if(w){$('#q').value=w;await doSearch(m?parseInt(m[1],10):null)}
- }catch(e){o.textContent='Lettura non riuscita (serve connessione internet). Riprova o cerca per nome.'}
+  const bad=/^(basic|base|stage|fase|evolves|evolve|trainer|energy|pokemon)$/i;
+  const words=nameTxt.replace(/[^A-Za-zÀ-ÿ'\s-]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!bad.test(w)).sort((a,b)=>b.length-a.length).slice(0,3);
+  o.textContent=`Letto: ${words[0]||'nome non chiaro'} ${m?m[1]:''}. Se non è giusto, correggi qui sopra e premi Cerca.`;
+  let found=false;
+  for(const w of words){$('#q').value=w;if(await doSearch(m?parseInt(m[1],10):null)){found=true;break}}
+  if(!found&&!words.length)$('#res').innerHTML='<div class="msg w">Non sono riuscito a leggere il nome. Riprova con più luce o scrivilo nel campo di ricerca.</div>';
+ }catch(e){o.textContent='Lettura non riuscita: '+e.message+'. Cerca per nome.'}
  $('#snap').disabled=false;
 };
 
-/* ---------- search results ---------- */
-let rt;$('#q').oninput=()=>{clearTimeout(rt);rt=setTimeout(()=>doSearch(null),500)};
+/* ---------- search ---------- */
+let rt;$('#q').oninput=()=>{clearTimeout(rt);rt=setTimeout(()=>doSearch(null),600)};
+$('#q').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(rt);$('#q').blur();doSearch(null)}};
+$('#sb').onclick=()=>doSearch(null);$('#lang').onchange=()=>doSearch(null);
 async function doSearch(n){
- const q=$('#q').value.trim();if(q.length<2){$('#res').innerHTML='';return}
- $('#res').innerHTML='<p class="hint">Ricerca…</p>';
+ const q=$('#q').value.trim();if(q.length<2){$('#res').innerHTML='';return false}
+ $('#res').innerHTML='<p class="hint">Ricerca in corso…</p>';
  try{
-  let l=await search(q,$('#lang').value);
+  const l=await search(q,$('#lang').value);
   if(n)l.sort((a,b)=>(parseInt(b.localId,10)===n)-(parseInt(a.localId,10)===n));
-  $('#res').innerHTML=l.length?l.map(c=>cardHtml({id:c.id,name:c.name,img:c.image+'/low.webp',sub:c.localId+(n&&parseInt(c.localId,10)===n?' ✓':'')},`<button class="btn" data-a="add" data-id="${c.id}">+ Collezione</button>`)).join(''):'<p class="hint">Nessuna carta trovata.</p>';
-  window._brief=Object.fromEntries(l.map(c=>[c.id,c]));
- }catch(e){$('#res').innerHTML='<div class="msg">Database non raggiungibile. Controlla la connessione.</div>'}
+  l.forEach(c=>lastBrief[c.id]=c);
+  $('#res').innerHTML=l.length?l.map(c=>tile({id:c.id,name:c.name,img:(c.image?c.image+'/low.webp':''),sub:'N° '+c.localId+(n&&parseInt(c.localId,10)===n?' ✓ numero letto':'')},'')).join(''):'<p class="hint">Nessuna carta trovata per “'+esc(q)+'”.</p>';
+  return l.length>0;
+ }catch(e){$('#res').innerHTML='<div class="msg">Ricerca non riuscita: '+esc(e.message)+'. Controlla la connessione e riprova.</div>';return false}
 }
-$('#lang').onchange=()=>doSearch(null);
-const cardHtml=(c,extra)=>`<div class="ct"><img loading="lazy" src="${esc(c.img)}" alt=""><b>${esc(c.name)}</b><span class="tag">${esc(c.sub||'')}</span>${extra}</div>`;
-$('#res').onclick=async e=>{const b=e.target.closest('button[data-a=add]');if(!b)return;b.disabled=true;b.textContent='…';
- try{await info(b.dataset.id,window._brief?.[b.dataset.id]);S.col[b.dataset.id]=(S.col[b.dataset.id]||0)+1;save();b.textContent='Aggiunta ('+S.col[b.dataset.id]+')'}catch(err){b.textContent='Errore'}
- b.disabled=false};
+const tile=(c,extra)=>`<div class="ct" data-open="${esc(c.id)}"><img loading="lazy" src="${esc(c.img)}" alt="" onerror="this.onerror=null;this.src=this.src.replace('.webp','.png')"><b>${esc(c.name)}</b><span class="tag">${esc(c.sub||'')}</span>${extra}</div>`;
+document.addEventListener('click',e=>{const t=e.target.closest('[data-open]');if(t&&!e.target.closest('button'))openCard(t.dataset.open)});
 
-/* ---------- collection ---------- */
-function qtyBox(id,map){return `<div class="q"><button data-a="m" data-id="${id}">−</button><b>${map[id]}</b><button data-a="p" data-id="${id}">+</button></div>`}
-function renderCol(){
- const ids=Object.keys(S.col),tot=ids.reduce((a,i)=>a+S.col[i],0),f=$('#cf').value.toLowerCase();
- $('#cs').innerHTML=`<div><b>${tot}</b>carte</div><div><b>${ids.length}</b>diverse</div>`;
- const l=ids.map(i=>S.cards[i]).filter(c=>c&&(c.name+c.nameEn+c.setName).toLowerCase().includes(f)).sort((a,b)=>a.nameEn.localeCompare(b.nameEn));
- $('#cl').innerHTML=l.length?l.map(c=>cardHtml({...c,sub:`${c.setCode} ${c.num} · ${c.std?'Standard ✓':'Non Standard'}`},qtyBox(c.id,S.col))).join(''):'<p class="hint">Nessuna carta. Scansiona o cerca una carta e aggiungila.</p>';
+/* ---------- detail ---------- */
+async function openCard(id){
+ const ov=$('#ov');ov.hidden=false;ov.innerHTML='<div class="box"><p class="hint">Carico la carta e il prezzo…</p></div>';
+ try{
+  const c=await info(id);
+  ov.innerHTML=`<div class="box"><img src="${esc(c.img)}" alt="">
+  <h2>${esc(c.name)}${c.name!==c.nameEn?' <span class="tag">('+esc(c.nameEn)+')</span>':''}</h2>
+  <p class="hint">${esc(c.setName)} (${esc(c.setCode)}) · N° ${esc(c.num)} · ${esc(c.rar)||'—'}<br>${esc(grp(c))}${c.hp?' · PS '+c.hp:''}${c.types?' · '+esc(c.types):''}</p>
+  <p><span class="pr">${c.price?eur(c.price)+(c.cur==='USD'?' (da USD, stima)':' · Cardmarket'):'Prezzo non disponibile'}</span><br>
+  <span class="tag">${c.std?'Legale in Standard ✓':'Non legale in Standard'}${c.mark?' · Marchio '+esc(c.mark):''}</span></p>
+  <div class="row"><button class="btn" data-add="col">+ Collezione${S.lists.col[id]?' ('+S.lists.col[id]+')':''}</button><button class="btn g" data-add="wish">+ Desideri</button></div>
+  <div class="row"><button class="btn g" data-add="deck">+ Mazzo attuale</button><button class="btn r" data-x>Chiudi</button></div></div>`;
+  ov.onclick=e=>{const b=e.target.closest('button');if(!b){if(e.target===ov)ov.hidden=true;return}
+   if(b.dataset.x!==undefined){ov.hidden=true;return}
+   const k=b.dataset.add;if(k==='deck'){const d=cd();if(!d){b.textContent='Crea prima un mazzo';return}d.cards[id]=(d.cards[id]||0)+1}
+   else S.lists[k][id]=(S.lists[k][id]||0)+1;
+   save();b.textContent='Aggiunta ✓'}
+ }catch(e){ov.innerHTML='<div class="box"><div class="msg">Non riesco a caricare la carta: '+esc(e.message)+'</div><button class="btn r" data-x>Chiudi</button></div>';ov.onclick=()=>ov.hidden=true}
 }
-$('#cf').oninput=renderCol;
-$('#cl').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;
- if(b.dataset.a==='p')S.col[id]++;else{S.col[id]--;if(S.col[id]<1)delete S.col[id]}save();renderCol()};
+
+/* ---------- collection / wishlist ---------- */
+const qtyBox=(id,m)=>`<div class="q"><button data-a="m" data-id="${id}">−</button><b>${m[id]}</b><button data-a="p" data-id="${id}">+</button></div>`;
+document.querySelectorAll('#lseg button').forEach(b=>b.onclick=()=>{curList=b.dataset.l;document.querySelectorAll('#lseg button').forEach(x=>x.classList.toggle('on',x===b));renderCol()});
+function renderCol(){
+ const m=S.lists[curList],ids=Object.keys(m),f=$('#cf').value.toLowerCase(),so=$('#so').value;
+ const all=ids.map(i=>S.cards[i]).filter(Boolean);
+ const tot=all.reduce((a,c)=>a+m[c.id],0),val=all.reduce((a,c)=>a+m[c.id]*c.price,0);
+ const sets=new Set(all.map(c=>c.setId)).size;
+ $('#cs').innerHTML=`<div><b>${tot}</b>carte</div><div><b>${all.length}</b>diverse</div><div><b>${sets}</b>set</div><div><b>${eur(val)}</b>valore</div>`;
+ const l=all.filter(c=>(c.name+c.nameEn+c.setName).toLowerCase().includes(f));
+ l.sort((a,b)=>so==='price'?b.price-a.price:so==='set'?a.setName.localeCompare(b.setName)||num(a.num)-num(b.num):a.nameEn.localeCompare(b.nameEn));
+ $('#cl').innerHTML=l.length?l.map(c=>tile({...c,sub:`${c.setCode} ${c.num} · ${c.price?eur(c.price):'—'}`},qtyBox(c.id,m))).join(''):`<p class="hint">${curList==='col'?'Nessuna carta. Scansiona o cerca una carta e aggiungila.':'La lista desideri è vuota.'}</p>`;
+}
+$('#cf').oninput=renderCol;$('#so').onchange=renderCol;
+$('#cl').onclick=e=>{const b=e.target.closest('button');if(!b)return;const m=S.lists[curList],id=b.dataset.id;
+ if(b.dataset.a==='p')m[id]++;else{m[id]--;if(m[id]<1)delete m[id]}save();renderCol()};
+$('#rp').onclick=async()=>{const b=$('#rp');const ids=Object.keys(S.lists[curList]);let i=0;
+ for(const id of ids){b.textContent=`Aggiorno ${++i}/${ids.length}…`;try{await info(id,true)}catch(e){}}
+ b.textContent='Aggiorna prezzi';renderCol()};
+$('#csv').onclick=()=>{const m=S.lists[curList];const rows=['Nome,Nome inglese,Set,Codice set,Numero,Rarità,Copie,Prezzo EUR,Totale EUR'];
+ Object.keys(m).map(i=>S.cards[i]).filter(Boolean).forEach(c=>rows.push([c.name,c.nameEn,c.setName,c.setCode,c.num,c.rar,m[c.id],c.price.toFixed(2),(c.price*m[c.id]).toFixed(2)].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));a.download=curList+'.csv';a.click()};
 
 /* ---------- decks ---------- */
 const cd=()=>S.decks.find(d=>d.id===S.cur);
@@ -169,37 +216,50 @@ function renderDeck(){
  $('#dsel').innerHTML=S.decks.length?S.decks.map(d=>`<option value="${d.id}" ${d.id===S.cur?'selected':''}>${esc(d.name)}</option>`).join(''):'<option>Nessun mazzo</option>';
  const d=cd(),B=$('#db');
  if(!d){B.innerHTML='<p class="hint">Crea un mazzo con “Nuovo”.</p>';return}
- const ids=Object.keys(d.cards),cs=ids.map(i=>S.cards[i]).filter(Boolean);
- const n=ids.reduce((a,i)=>a+d.cards[i],0),msgs=[];
+ const cs=Object.keys(d.cards).map(i=>S.cards[i]).filter(Boolean);
+ const n=cs.reduce((a,c)=>a+d.cards[c.id],0),by=k=>cs.filter(c=>c.cat===k).reduce((a,c)=>a+d.cards[c.id],0);
+ const val=cs.reduce((a,c)=>a+d.cards[c.id]*c.price,0),msgs=[];
  if(n!==60)msgs.push(['',`${n} carte: ne servono 60.`]);
  const byName={};cs.forEach(c=>{if(!isBasicEn(c))byName[c.nameEn]=(byName[c.nameEn]||0)+d.cards[c.id]});
  Object.entries(byName).filter(([,v])=>v>4).forEach(([k,v])=>msgs.push(['',`${k}: ${v} copie, massimo 4.`]));
  if(!cs.some(c=>c.cat==='Pokemon'&&c.stage==='Basic'))msgs.push(['','Serve almeno un Pokémon Base.']);
- const ns=cs.filter(c=>!c.std);if(ns.length)msgs.push(['w',`Non legali in Standard: ${ns.map(c=>c.nameEn).join(', ')}.`]);
+ const ns=cs.filter(c=>!c.std);if(ns.length)msgs.push(['w','Non legali in Standard: '+[...new Set(ns.map(c=>c.nameEn))].join(', ')+'.']);
  if(!msgs.length)msgs.push(['o','Mazzo valido per Standard.']);
- B.innerHTML=`<div class="stat"><div><b>${n}/60</b>carte</div><div><b>${cs.filter(c=>c.cat==='Pokemon').reduce((a,c)=>a+d.cards[c.id],0)}</b>Pokémon</div></div>
+ const miss=cs.reduce((a,c)=>a+Math.max(0,d.cards[c.id]-(S.lists.col[c.id]||0)),0);
+ B.innerHTML=`<div class="stat"><div><b>${n}/60</b>carte</div><div><b>${by('Pokemon')}</b>Pokémon</div><div><b>${by('Trainer')}</b>Allenatori</div><div><b>${by('Energy')}</b>Energie</div></div>
+ <div class="stat"><div><b>${eur(val)}</b>valore mazzo</div><div><b>${miss}</b>copie che ti mancano</div></div>
  ${msgs.map(m=>`<div class="msg ${m[0]}">${m[1]}</div>`).join('')}
- <div class="row"><button class="btn r" id="ex">Esporta decklist</button><button class="btn g" id="ad">Aggiungi dalla collezione</button></div>
+ <div class="row"><button class="btn r" id="pdf">Esporta PDF</button><button class="btn g" id="ex">Testo (Limitless)</button></div>
  <textarea id="ot" rows="8" hidden readonly></textarea><div class="row" id="eb" hidden><button class="btn" id="cp">Copia</button><button class="btn g" id="sh">Condividi</button></div>
- <div class="res" id="dl">${cs.sort((a,b)=>a.nameEn.localeCompare(b.nameEn)).map(c=>cardHtml({...c,sub:`${c.setCode} ${c.num}`},qtyBox(c.id,d.cards))).join('')}</div><div id="pk"></div>`;
+ <div class="row"><button class="btn g" id="ad">Aggiungi dalla collezione</button><button class="btn g" id="aw">Cerca nuove carte</button></div>
+ <div class="res" id="dl">${cs.sort((a,b)=>a.cat.localeCompare(b.cat)||a.nameEn.localeCompare(b.nameEn)).map(c=>tile({...c,sub:`${c.setCode} ${c.num}`},qtyBox(c.id,d.cards))).join('')}</div><div id="pk"></div>`;
+ $('#pdf').onclick=()=>deckPdf(d);
  $('#ex').onclick=()=>{$('#ot').value=decklist(d);$('#ot').hidden=false;$('#eb').hidden=false};
  $('#cp').onclick=async()=>{try{await navigator.clipboard.writeText($('#ot').value);$('#cp').textContent='Copiata'}catch(e){$('#ot').select()}};
  $('#sh').onclick=()=>navigator.share?navigator.share({title:d.name,text:$('#ot').value}):$('#ot').select();
+ $('#aw').onclick=()=>document.querySelector('nav button[data-t=scan]').click();
  $('#dl').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;if(b.dataset.a==='p')d.cards[id]++;else{d.cards[id]--;if(d.cards[id]<1)delete d.cards[id]}save();renderDeck()};
- $('#ad').onclick=()=>{const l=Object.keys(S.col).map(i=>S.cards[i]).filter(Boolean).sort((a,b)=>a.nameEn.localeCompare(b.nameEn));
-  $('#pk').innerHTML='<h2>Scegli dalla collezione</h2><div class="res">'+(l.length?l.map(c=>cardHtml({...c,sub:`${c.setCode} ${c.num} · ne hai ${S.col[c.id]}`},`<button class="btn" data-id="${c.id}">+ Mazzo</button>`)).join(''):'<p class="hint">Collezione vuota.</p>')+'</div>';
-  $('#pk').onclick=e=>{const b=e.target.closest('button');if(!b)return;d.cards[b.dataset.id]=(d.cards[b.dataset.id]||0)+1;save();const y=$('main').scrollTop;renderDeck();$('#ad').click();$('main').scrollTop=y}};
+ $('#ad').onclick=()=>{const l=Object.keys(S.lists.col).map(i=>S.cards[i]).filter(Boolean).sort((a,b)=>a.nameEn.localeCompare(b.nameEn));
+  $('#pk').innerHTML='<h2>Scegli dalla collezione</h2><div class="res">'+(l.length?l.map(c=>tile({...c,sub:`${c.setCode} ${c.num} · ne hai ${S.lists.col[c.id]}`},`<button class="btn" data-pick="${c.id}">+ Mazzo</button>`)).join(''):'<p class="hint">Collezione vuota.</p>')+'</div>';
+  $('#pk').onclick=e=>{const b=e.target.closest('button');if(!b)return;d.cards[b.dataset.pick]=(d.cards[b.dataset.pick]||0)+1;save();const y=$('main').scrollTop;renderDeck();$('#ad').click();$('main').scrollTop=y}};
 }
-function decklist(d){
- const g={'Pokémon':[],Trainer:[],Energy:[]};
- Object.keys(d.cards).map(i=>S.cards[i]).filter(Boolean).forEach(c=>g[grp(c)].push(c));
- return Object.entries(g).filter(([,l])=>l.length).map(([k,l])=>`${k}: ${l.reduce((a,c)=>a+d.cards[c.id],0)}\n`+l.map(c=>`${d.cards[c.id]} ${c.nameEn} ${c.setCode} ${num(c.num)}`).join('\n')).join('\n\n');
+function lines(d){const g={};Object.keys(d.cards).map(i=>S.cards[i]).filter(Boolean).forEach(c=>(g[grpEn(c)]=g[grpEn(c)]||[]).push(c));
+ return ['Pokémon','Trainer','Energy'].filter(k=>g[k]).map(k=>({k,l:g[k].sort((a,b)=>a.nameEn.localeCompare(b.nameEn)),n:g[k].reduce((a,c)=>a+d.cards[c.id],0)}))}
+function decklist(d){return lines(d).map(s=>`${s.k}: ${s.n}\n`+s.l.map(c=>`${d.cards[c.id]} ${c.nameEn} ${c.setCode} ${num(c.num)}`).join('\n')).join('\n\n')}
+function deckPdf(d){
+ if(!window.jspdf){window.print();return}
+ const doc=new window.jspdf.jsPDF(),tot=Object.values(d.cards).reduce((a,b)=>a+b,0);let y=20;
+ doc.setFontSize(18);doc.text(d.name,15,y);y+=8;doc.setFontSize(10);doc.text(`Decklist - ${tot} carte - ${new Date().toLocaleDateString('it-IT')}`,15,y);y+=4;doc.text('Nome giocatore: ____________________   Player ID: ____________   Data di nascita: ____________',15,y+6);y+=16;
+ lines(d).forEach(s=>{if(y>270){doc.addPage();y=20}doc.setFontSize(12);doc.setFont(undefined,'bold');doc.text(`${s.k} (${s.n})`,15,y);y+=6;doc.setFont(undefined,'normal');doc.setFontSize(10);
+  s.l.forEach(c=>{if(y>280){doc.addPage();y=20}doc.text(String(d.cards[c.id]),17,y);doc.text(c.nameEn,28,y);doc.text(`${c.setCode} ${num(c.num)}`,130,y);if(c.mark)doc.text(c.mark,165,y);y+=5.2});y+=4});
+ doc.save(d.name.replace(/[^\w-]+/g,'_')+'.pdf');
 }
 $('#dsel').onchange=e=>{S.cur=e.target.value;save();renderDeck()};
 $('#dn').onclick=()=>{const n=prompt('Nome del mazzo:');if(!n)return;const d={id:uid(),name:n.trim(),cards:{}};S.decks.push(d);S.cur=d.id;save();renderDeck()};
 $('#dr').onclick=()=>{const d=cd();if(!d)return;const n=prompt('Nuovo nome:',d.name);if(n){d.name=n.trim();save();renderDeck()}};
-$('#dd').onclick=()=>{const d=cd();if(d&&confirm('Eliminare “'+d.name+'”?')){S.decks=S.decks.filter(x=>x!==d);S.cur=S.decks[0]?.id||null;save();renderDeck()}};
+$('#dd').onclick=()=>{const d=cd();if(d&&confirm('Eliminare “'+d.name+'”?')){S.decks=S.decks.filter(x=>x!==d);S.cur=S.decks[0]?S.decks[0].id:null;save();renderDeck()}};
 
+ping();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
